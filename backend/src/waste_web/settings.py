@@ -16,6 +16,18 @@ def resolve_project_path(value: str, default: str) -> Path:
     return (PROJECT_ROOT / candidate).resolve()
 
 
+def env_flag(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be a boolean value")
+
+
 @dataclass(frozen=True)
 class Settings:
     project_root: Path = PROJECT_ROOT
@@ -37,6 +49,23 @@ class Settings:
     audit_key: str = os.getenv("WASTE_AUDIT_KEY", "")
     device: str = os.getenv("WASTE_DEVICE", "")
     model_imgsz: int = int(os.getenv("WASTE_MODEL_IMGSZ", "640"))
+    model_half: bool = env_flag("WASTE_MODEL_HALF", True)
+    inference_batch_size: int = max(
+        1,
+        int(os.getenv("WASTE_INFERENCE_BATCH_SIZE", "2")),
+    )
+    output_jpeg_quality: int = min(
+        95,
+        max(70, int(os.getenv("WASTE_OUTPUT_JPEG_QUALITY", "92"))),
+    )
+    history_thumbnail_size: int = max(
+        96,
+        int(os.getenv("WASTE_HISTORY_THUMBNAIL_SIZE", "192")),
+    )
+    history_thumbnail_quality: int = min(
+        95,
+        max(60, int(os.getenv("WASTE_HISTORY_THUMBNAIL_QUALITY", "82"))),
+    )
     default_pixel_area_cm2: float = float(os.getenv("WASTE_PIXEL_AREA_CM2", "0.05"))
     max_files: int = int(os.getenv("WASTE_MAX_FILES", "12"))
     max_file_bytes: int = int(os.getenv("WASTE_MAX_FILE_MB", "20")) * 1024 * 1024

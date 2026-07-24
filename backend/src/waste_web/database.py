@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, create_engine, inspect, select, text
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, selectinload, sessionmaker
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, create_engine, event, inspect, select, text
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, load_only, mapped_column, relationship, selectinload, sessionmaker
 
 
 def utc_now() -> datetime:
@@ -81,8 +81,9 @@ class AuditStore:
         self.database_path = database_path
         self.engine = create_engine(
             f"sqlite:///{database_path.as_posix()}",
-            connect_args={"check_same_thread": False},
+            connect_args={"check_same_thread": False, "timeout": 30},
         )
+        event.listen(self.engine, "connect", configure_sqlite_connection)
         self.session_factory = sessionmaker(bind=self.engine, expire_on_commit=False)
 
     def initialize(self) -> None:
@@ -161,15 +162,34 @@ class AuditStore:
             run.duration_ms = duration_ms
             session.commit()
 
-    def list_runs(self, limit: int = 50, offset: int = 0) -> list[InferenceRun]:
+    def list_runs(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+        *,
+        include_images: bool = True,
+    ) -> list[InferenceRun]:
         with self.session_factory() as session:
             statement = (
                 select(InferenceRun)
-                .options(selectinload(InferenceRun.images))
                 .order_by(InferenceRun.created_at.desc())
                 .offset(offset)
                 .limit(limit)
             )
+            if include_images:
+                statement = statement.options(
+                    selectinload(InferenceRun.images).options(
+                        load_only(
+                            AuditImage.id,
+                            AuditImage.run_id,
+                            AuditImage.original_filename,
+                            AuditImage.input_path,
+                            AuditImage.output_path,
+                            AuditImage.mean_confidence,
+                            AuditImage.detections_json,
+                        )
+                    )
+                )
             return list(session.scalars(statement))
 
     def get_run(self, run_id: str) -> InferenceRun | None:
@@ -198,11 +218,18 @@ class AuditStore:
 
         with self.session_factory() as session:
             runs = list(
-                session.scalars(
-                    select(InferenceRun)
-                    .options(selectinload(InferenceRun.images))
-                    .order_by(InferenceRun.created_at.asc())
+                session.execute(
+                    select(
+                        InferenceRun.created_at,
+                        InferenceRun.status,
+                        InferenceRun.image_count,
+                        InferenceRun.total_detections,
+                        InferenceRun.duration_ms,
+                    ).order_by(InferenceRun.created_at.asc())
                 )
+            )
+            detection_payloads = list(
+                session.scalars(select(AuditImage.detections_json))
             )
 
         def local_date(value: datetime) -> date:
@@ -235,10 +262,15 @@ class AuditStore:
                 daily[run_date]["runs"] += 1
                 daily[run_date]["images"] += run.image_count
                 daily[run_date]["detections"] += run.total_detections
-            for image in run.images:
-                for detection in image.detections:
-                    label = str(detection.get("label") or "unknown")
-                    material_counts[label] += 1
+
+        for payload in detection_payloads:
+            try:
+                detections = json.loads(payload)
+            except (TypeError, json.JSONDecodeError):
+                continue
+            for detection in detections:
+                label = str(detection.get("label") or "unknown")
+                material_counts[label] += 1
 
         total_runs = len(runs)
         return {
@@ -282,3 +314,15 @@ class AuditStore:
 
     def close(self) -> None:
         self.engine.dispose()
+
+
+def configure_sqlite_connection(dbapi_connection, _) -> None:
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.execute("PRAGMA temp_store=MEMORY")
+    finally:
+        cursor.close()

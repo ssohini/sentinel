@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import threading
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,11 @@ class YoloInferenceService:
         self.class_names = self._load_class_names(settings.dataset_config_path)
         self.load_error: str | None = None
         self._lock = threading.Lock()
+        self.use_half = (
+            settings.model_half
+            and torch.cuda.is_available()
+            and str(self.device).lower() not in {"cpu", "mps"}
+        )
 
     @property
     def ready(self) -> bool:
@@ -38,6 +44,8 @@ class YoloInferenceService:
         model_names = getattr(model, "names", None)
         if model_names:
             self.class_names = self._normalize_names(model_names)
+        if self.use_half:
+            torch.backends.cudnn.benchmark = True
         self.model = model
         self.load_error = None
 
@@ -46,23 +54,48 @@ class YoloInferenceService:
         image: Image.Image,
         confidence: float,
         max_detections: int,
-    ) -> tuple[list[dict[str, Any]], Image.Image]:
+    ) -> list[dict[str, Any]]:
+        return self.predict_batch([image], confidence, max_detections)[0]
+
+    def predict_batch(
+        self,
+        images: list[Image.Image],
+        confidence: float,
+        max_detections: int,
+    ) -> list[list[dict[str, Any]]]:
         if self.model is None:
             raise RuntimeError(self.load_error or "The YOLO model is not loaded.")
+        if not images:
+            return []
 
-        rgb_image = image.convert("RGB")
-        with self._lock:
-            results = self.model.predict(
-                source=rgb_image,
-                conf=confidence,
-                max_det=max_detections,
-                imgsz=self.settings.model_imgsz,
-                device=self.device,
-                verbose=False,
-            )
+        rgb_images = [
+            image if image.mode == "RGB" else image.convert("RGB")
+            for image in images
+        ]
+        detections_by_image: list[list[dict[str, Any]]] = []
+        batch_size = self.settings.inference_batch_size
 
-        detections = self._detections_from_result(results[0] if results else None, max_detections)
-        return detections, self.draw_predictions(rgb_image, detections)
+        with self._lock, torch.inference_mode():
+            for start in range(0, len(rgb_images), batch_size):
+                chunk = rgb_images[start : start + batch_size]
+                results = self.model.predict(
+                    source=chunk,
+                    conf=confidence,
+                    max_det=max_detections,
+                    imgsz=self.settings.model_imgsz,
+                    device=self.device,
+                    half=self.use_half,
+                    verbose=False,
+                )
+                if len(results) != len(chunk):
+                    raise RuntimeError(
+                        "YOLO returned an unexpected number of batch results."
+                    )
+                detections_by_image.extend(
+                    self._detections_from_result(result, max_detections)
+                    for result in results
+                )
+        return detections_by_image
 
     def _detections_from_result(self, result: Any, max_detections: int) -> list[dict[str, Any]]:
         if result is None or getattr(result, "boxes", None) is None:
@@ -119,10 +152,7 @@ class YoloInferenceService:
         annotated = image.copy()
         draw = ImageDraw.Draw(annotated)
         font_size = max(14, min(28, round(min(image.size) * 0.025)))
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except OSError:
-            font = ImageFont.load_default()
+        font = self._font_for_size(font_size)
         line_width = max(3, round(min(image.size) * 0.004))
 
         for detection in detections:
@@ -154,6 +184,15 @@ class YoloInferenceService:
         return annotated
 
     @staticmethod
+    @lru_cache(maxsize=16)
+    def _font_for_size(font_size: int):
+        try:
+            return ImageFont.truetype("arial.ttf", font_size)
+        except OSError:
+            return ImageFont.load_default()
+
+    @staticmethod
+    @lru_cache(maxsize=64)
     def _color_for_label(label: str) -> tuple[int, int, int]:
         seed = sum(ord(char) for char in label)
         return (

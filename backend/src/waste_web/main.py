@@ -6,6 +6,7 @@ import json
 import re
 import secrets
 import statistics
+import threading
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -48,6 +49,8 @@ quality_checker = ImageQualityChecker(
     minimum_brightness=settings.quality_min_brightness,
     maximum_brightness=settings.quality_max_brightness,
 )
+thumbnail_lock = threading.Lock()
+IMMUTABLE_FILE_HEADERS = {"Cache-Control": "private, max-age=31536000, immutable"}
 
 
 @dataclass
@@ -233,7 +236,16 @@ async def execute_prediction(
     response_images = []
     total_detections = 0
     try:
-        for index, prepared_image in enumerate(prepared, start=1):
+        detections_by_image = await run_in_threadpool(
+            inference.predict_batch,
+            [item.image for item in prepared],
+            confidence,
+            max_detections,
+        )
+        for index, (prepared_image, detections) in enumerate(
+            zip(prepared, detections_by_image, strict=True),
+            start=1,
+        ):
             raw = prepared_image.raw
             image_sha256 = hashlib.sha256(raw).hexdigest()
             image = prepared_image.image
@@ -242,14 +254,7 @@ async def execute_prediction(
             stored_name = f"{index:02d}_{safe_stem}.jpg"
             input_path = input_dir / stored_name
             output_path = output_dir / f"{Path(stored_name).stem}_detected.jpg"
-            image.save(input_path, format="JPEG", quality=95)
-
-            detections, annotated = await run_in_threadpool(
-                inference.predict,
-                image,
-                confidence,
-                max_detections,
-            )
+            image.save(input_path, format="JPEG", quality=settings.output_jpeg_quality)
             (
                 detections,
                 image_weight,
@@ -261,7 +266,12 @@ async def execute_prediction(
                 weight_estimator,
             )
             annotated = inference.draw_predictions(image, detections)
-            annotated.save(output_path, format="JPEG", quality=95)
+            annotated.save(
+                output_path,
+                format="JPEG",
+                quality=settings.output_jpeg_quality,
+            )
+            save_history_preview(annotated, history_preview_path(output_path))
             mean_confidence = (
                 statistics.mean(item["confidence"] for item in detections)
                 if detections
@@ -426,7 +436,12 @@ async def rerun_history(
 
 
 @app.get("/api/files/{run_id}/{image_id}/{kind}", include_in_schema=False)
-def result_file(run_id: str, image_id: int, kind: str) -> FileResponse:
+def result_file(
+    run_id: str,
+    image_id: int,
+    kind: str,
+    preview: bool = False,
+) -> FileResponse:
     image = store.get_image(image_id)
     if image is None or image.run_id != run_id:
         raise HTTPException(status_code=404, detail="Image record not found.")
@@ -434,9 +449,15 @@ def result_file(run_id: str, image_id: int, kind: str) -> FileResponse:
     if relative_path is None:
         raise HTTPException(status_code=404, detail="File type not found.")
     path = safe_data_path(relative_path)
-    if not path.exists():
+    if not path.exists() or not path.is_file():
         raise HTTPException(status_code=404, detail="Stored file not found.")
-    return FileResponse(path)
+    if preview:
+        path = get_or_create_history_preview(path)
+    return FileResponse(
+        path,
+        media_type="image/jpeg" if preview else None,
+        headers=IMMUTABLE_FILE_HEADERS,
+    )
 
 
 def require_audit_key(x_audit_key: str | None = Header(default=None)) -> None:
@@ -457,7 +478,14 @@ def require_audit_key(x_audit_key: str | None = Header(default=None)) -> None:
 def audit_runs(limit: int = 50, offset: int = 0) -> list[AuditRunSummary]:
     limit = min(max(limit, 1), 200)
     offset = max(offset, 0)
-    return [run_summary(run) for run in store.list_runs(limit=limit, offset=offset)]
+    return [
+        run_summary(run)
+        for run in store.list_runs(
+            limit=limit,
+            offset=offset,
+            include_images=False,
+        )
+    ]
 
 
 @app.get(
@@ -484,7 +512,46 @@ def safe_data_path(relative_path: str) -> Path:
     return candidate
 
 
-def stored_file_url(run_id: str, image: AuditImage, kind: str) -> str | None:
+def history_preview_path(source_path: Path) -> Path:
+    return source_path.with_name(f"{source_path.stem}_preview.jpg")
+
+
+def save_history_preview(image: Image.Image, destination: Path) -> None:
+    preview = image.copy()
+    if preview.mode != "RGB":
+        preview = preview.convert("RGB")
+    preview.thumbnail(
+        (settings.history_thumbnail_size, settings.history_thumbnail_size),
+        Image.Resampling.LANCZOS,
+    )
+    preview.save(
+        destination,
+        format="JPEG",
+        quality=settings.history_thumbnail_quality,
+    )
+
+
+def get_or_create_history_preview(source_path: Path) -> Path:
+    destination = history_preview_path(source_path)
+    source_mtime = source_path.stat().st_mtime_ns
+    if destination.exists() and destination.stat().st_mtime_ns >= source_mtime:
+        return destination
+
+    with thumbnail_lock:
+        if destination.exists() and destination.stat().st_mtime_ns >= source_mtime:
+            return destination
+        with Image.open(source_path) as source:
+            save_history_preview(source, destination)
+    return destination
+
+
+def stored_file_url(
+    run_id: str,
+    image: AuditImage,
+    kind: str,
+    *,
+    preview: bool = False,
+) -> str | None:
     relative_path = (
         image.input_path
         if kind == "input"
@@ -500,7 +567,8 @@ def stored_file_url(run_id: str, image: AuditImage, kind: str) -> str | None:
         return None
     if not path.exists() or not path.is_file():
         return None
-    return f"/api/files/{run_id}/{image.id}/{kind}"
+    query = "?preview=true" if preview else ""
+    return f"/api/files/{run_id}/{image.id}/{kind}{query}"
 
 
 def image_response(
@@ -624,8 +692,16 @@ def history_summary(run: InferenceRun) -> HistoryRunSummary:
         **run_summary(run).model_dump(),
         source_run_id=run.source_run_id,
         pixel_area_cm2=run.pixel_area_cm2,
-        preview_input_url=stored_file_url(run.id, first_image, "input") if first_image else None,
-        preview_output_url=stored_file_url(run.id, first_image, "output") if first_image else None,
+        preview_input_url=(
+            stored_file_url(run.id, first_image, "input", preview=True)
+            if first_image
+            else None
+        ),
+        preview_output_url=(
+            stored_file_url(run.id, first_image, "output", preview=True)
+            if first_image
+            else None
+        ),
         preview_filename=first_image.original_filename if first_image is not None else None,
         mean_confidence=statistics.mean(confidences) if confidences else None,
         expected_weight_min_kg=weight_min,
@@ -677,7 +753,7 @@ def frontend_index() -> FileResponse:
             status_code=503,
             detail="Frontend is not built. Run npm install and npm run build in frontend.",
         )
-    return FileResponse(index)
+    return FileResponse(index, headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/{full_path:path}", include_in_schema=False)
@@ -687,9 +763,14 @@ def frontend_files(full_path: str) -> FileResponse:
     candidate = (settings.frontend_dist / full_path).resolve()
     frontend_root = settings.frontend_dist.resolve()
     if candidate.exists() and candidate.is_file() and frontend_root in candidate.parents:
-        return FileResponse(candidate)
+        headers = (
+            IMMUTABLE_FILE_HEADERS
+            if full_path.startswith("assets/")
+            else {"Cache-Control": "no-cache"}
+        )
+        return FileResponse(candidate, headers=headers)
     index = settings.frontend_dist / "index.html"
     if index.exists():
-        return FileResponse(index)
+        return FileResponse(index, headers={"Cache-Control": "no-cache"})
     raise HTTPException(status_code=404, detail="Frontend is not built.")
 

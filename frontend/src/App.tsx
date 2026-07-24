@@ -838,7 +838,12 @@ function HistoryView({
               >
                 <div className="history-thumb">
                   {run.preview_output_url ?? run.preview_input_url ? (
-                    <img src={run.preview_output_url ?? run.preview_input_url ?? ''} alt="" />
+                    <img
+                      src={run.preview_output_url ?? run.preview_input_url ?? ''}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
                     <Database size={20} />
                   )}
@@ -1200,6 +1205,8 @@ function ResultItem({
             <img
               src={activeUrl}
               alt={activeView === 'input' ? `Uploaded ${image.filename}` : `Detected materials in ${image.filename}`}
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="missing-image">

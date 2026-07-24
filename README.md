@@ -62,7 +62,6 @@ AI-Assisted Scrap Detection And Weight Estimation/
           test/
     models/
       final.pt
-      final_general_backup.pt
     scripts/
       audit_logs.py
       evaluate_yolo.py
@@ -186,10 +185,10 @@ backend/configs/full_dataset_box.yaml
 Current YOLO split sizes:
 
 ```text
-train: 36,027 images, 259,391 objects
+train: 36,727 images, 260,191 objects
 val:    5,036 images,  42,466 objects
 test:   4,739 images,  28,615 objects
-total: 45,802 images, 330,472 objects
+total: 46,502 images, 331,272 objects
 ```
 
 The final training dataset includes selected and remapped detection data from:

@@ -44,6 +44,7 @@
 
 .app-main {
   min-width: 0;
+  min-height: 100vh;
 }
 
 .sidebar {
@@ -1159,16 +1160,27 @@ a.icon-button {
   font-size: 13px;
 }
 
-.history-page,
+.history-page {
+  height: calc(100vh - 72px);
+  height: calc(100dvh - 72px);
+  min-height: 0;
+  padding: 30px max(22px, calc((100vw - 1440px) / 2));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .system-page {
   min-height: calc(100vh - 72px);
   padding: 30px max(22px, calc((100vw - 1440px) / 2));
 }
 
 .history-shell {
-  min-height: 690px;
+  min-height: 0;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: 330px minmax(0, 1fr);
+  overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: 0 10px 28px rgba(24, 46, 38, 0.06);
@@ -1176,6 +1188,10 @@ a.icon-button {
 
 .history-index {
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-right: 1px solid var(--line);
   background: #f8faf9;
 }
@@ -1205,8 +1221,14 @@ a.icon-button {
 }
 
 .history-list {
-  max-height: calc(100vh - 230px);
-  overflow: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
 }
 
 .history-run {
@@ -1272,7 +1294,14 @@ a.icon-button {
 
 .history-detail {
   min-width: 0;
+  min-height: 0;
   padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
 }
 
 .history-detail-header {
@@ -1321,6 +1350,11 @@ a.icon-button {
   color: #8a4b13;
   background: #fff4e5;
   border-color: #f0c88e;
+}
+
+.history-result-list .result-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 680px;
 }
 
 .history-result-list {
@@ -2044,17 +2078,30 @@ a.icon-button {
     padding: 24px 16px;
   }
 
+  .history-page {
+    height: auto;
+    min-height: calc(100vh - 72px);
+    overflow: visible;
+  }
+
   .history-shell {
     grid-template-columns: 1fr;
+    overflow: visible;
   }
 
   .history-index {
+    overflow: visible;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
 
   .history-list {
-    max-height: 300px;
+    max-height: min(300px, 42dvh);
+    flex: 0 1 auto;
+  }
+
+  .history-detail {
+    overflow: visible;
   }
 
   .history-metrics,
