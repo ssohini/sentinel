@@ -83,7 +83,6 @@ AI-Assisted Scrap Detection And Weight Estimation/
         settings.py
     logs/
     runs/
-    yolo26x.pt
   data/
     uploads/
     outputs/
@@ -273,20 +272,20 @@ Evaluate the active checkpoint with:
 python backend\scripts\evaluate_yolo.py --model models\final.pt --data configs\full_dataset_box.yaml --split val --imgsz 640 --batch 4
 ```
 
-Latest final fine-tuning validation metrics:
+Latest selected model test metrics:
 
 ```text
-Run:        train_oversampled_eval_b4_20260627_145422
+Run:        train_test_3epoch_b5_20260724_141629
 Model:      YOLO26x bounding-box detector
-Epochs:     10
+Fine-tune:  3 epochs from the previous final.pt
 Image size: 640
-Batch:      4
-Workers:    4
+Batch:      5
+Workers:    6
 
-Precision:  0.7761
-Recall:     0.6581
-mAP50:      0.7247
-mAP50-95:   0.5724
+Precision:  0.7756
+Recall:     0.6310
+mAP50:      0.7386
+mAP50-95:   0.5827
 ```
 
 Model-selection summary used for the project presentation:

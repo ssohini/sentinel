@@ -1,6 +1,7 @@
-train: ../datasets/full_dataset_box/images/train
-val: ../datasets/full_dataset_box/images/val
-test: ../datasets/full_dataset_box/images/test
+path: "D:/Program/AI-Assisted Scrap Detection And Weight Estimation/backend/datasets/full_dataset_box"
+train: images/train
+val: images/val
+test: images/test
 names:
   0: cast_iron
   1: cloth
