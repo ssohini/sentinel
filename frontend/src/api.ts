@@ -16,70 +16,404 @@ export class ApiError extends Error {
   }
 }
 
-async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init)
-  if (!response.ok) {
-    let problem: ApiProblem = { message: `Request failed (${response.status})` }
-    try {
-      const payload = (await response.json()) as { detail?: string | ApiProblem }
-      if (typeof payload.detail === 'string') {
-        problem = { message: payload.detail }
-      } else if (payload.detail) {
-        problem = payload.detail
-      }
-    } catch {
-      // Keep the HTTP fallback for non-JSON responses.
-    }
-    throw new ApiError(problem)
+// Static Demo Health Response
+export async function getHealth(): Promise<HealthResponse> {
+  return {
+    status: 'ready',
+    model_ready: true,
+    device: 'cuda / tensor-core',
+    model_name: 'Sentinel-Spatial-v4.2',
+    class_count: 8,
+    input_size: 1080,
+    model_error: null,
   }
-  return (await response.json()) as T
 }
 
-export function getHealth(): Promise<HealthResponse> {
-  return requestJson<HealthResponse>('/api/health')
+// Static Demo Daily Surveillance Report Summary
+export async function getDashboardSummary(): Promise<DashboardSummary> {
+  return {
+    generated_at: new Date().toISOString(),
+    timezone: 'UTC+00:00 (BORDER SURVEILLANCE MATRIX)',
+    today_label: '24-Hour Surveillance Cycle',
+    total_runs: 1284,
+    today_runs: 142,
+    completed_runs: 1284,
+    failed_runs: 0,
+    total_images: 4890,
+    today_images: 620,
+    total_detections: 3140,
+    today_detections: 384,
+    success_rate: 100.0,
+    average_duration_ms: 18.4,
+    daily_activity: [
+      { date: '2026-08-18', label: 'MON', runs: 165, images: 520, detections: 410 },
+      { date: '2026-08-19', label: 'TUE', runs: 180, images: 580, detections: 460 },
+      { date: '2026-08-20', label: 'WED', runs: 172, images: 540, detections: 390 },
+      { date: '2026-08-21', label: 'THU', runs: 195, images: 630, detections: 485 },
+      { date: '2026-08-22', label: 'FRI', runs: 210, images: 710, detections: 530 },
+      { date: '2026-08-23', label: 'SAT', runs: 220, images: 750, detections: 480 },
+      { date: '2026-08-24', label: 'SUN (TODAY)', runs: 142, images: 620, detections: 384 },
+    ],
+    material_counts: [
+      { label: 'Person (Tracked Subject)', count: 1840 },
+      { label: 'Vehicle (All Types)', count: 820 },
+      { label: 'Group Gathering', count: 260 },
+      { label: 'Unknown Object / Cargo', count: 220 },
+    ],
+  }
 }
 
-export function getDashboardSummary(): Promise<DashboardSummary> {
-  return requestJson<DashboardSummary>('/api/dashboard/summary')
-}
-
-export function runPrediction(
+// Simulated Spatial AI Prediction Handler for uploaded/demo images
+export async function runPrediction(
   files: File[],
   confidence: number,
-  maxDetections: number,
-  pixelAreaCm2: number,
+  _maxDetections: number,
+  _pixelAreaCm2: number,
 ): Promise<PredictionRun> {
-  const form = new FormData()
-  files.forEach((file) => form.append('files', file))
-  form.append('confidence', confidence.toString())
-  form.append('max_detections', maxDetections.toString())
-  form.append('pixel_area_cm2', pixelAreaCm2.toString())
-  return requestJson<PredictionRun>('/api/predict', {
-    method: 'POST',
-    body: form,
+  const images = files.map((file, idx) => {
+    const previewUrl = URL.createObjectURL(file)
+    return {
+      image_id: idx + 1,
+      filename: file.name,
+      width: 1920,
+      height: 1080,
+      input_url: previewUrl,
+      output_url: previewUrl,
+      detection_count: 3,
+      mean_confidence: 0.91,
+      estimated_weight_kg: 0,
+      expected_weight_min_kg: 0,
+      expected_weight_max_kg: 0,
+      totals_by_material_kg: {},
+      quality: {
+        valid: true,
+        score: 96,
+        blur_score: 12,
+        contrast_score: 88,
+        brightness: 110,
+        width: 1920,
+        height: 1080,
+        issues: [],
+      },
+      detections: [
+        {
+          label: 'Person (Track ID: TRK-0182)',
+          class_id: 1,
+          confidence: Math.max(confidence, 0.94),
+          box_xyxy: [120, 240, 380, 720],
+          mask_area_px: null,
+          area_method: 'Spatial Bounding',
+          category: 'Tracked Subject',
+          box_area_px: 124800,
+          area_px_used: 124800,
+          estimated_weight_kg: null,
+          expected_weight_min_kg: null,
+          expected_weight_max_kg: null,
+          weight_method: 'Approach Vector: 2.4 m/s',
+          box_fill_ratio_used: null,
+          thickness_cm_used: null,
+          density_kg_m3_used: null,
+          pixel_area_cm2_used: null,
+        },
+        {
+          label: 'Vehicle (Track ID: TRK-0419)',
+          class_id: 2,
+          confidence: Math.max(confidence, 0.89),
+          box_xyxy: [600, 310, 1100, 780],
+          mask_area_px: null,
+          area_method: 'Spatial Bounding',
+          category: 'Vehicle Transit',
+          box_area_px: 235000,
+          area_px_used: 235000,
+          estimated_weight_kg: null,
+          expected_weight_min_kg: null,
+          expected_weight_max_kg: null,
+          weight_method: 'Stationary / Perimeter Zone',
+          box_fill_ratio_used: null,
+          thickness_cm_used: null,
+          density_kg_m3_used: null,
+          pixel_area_cm2_used: null,
+        },
+        {
+          label: 'Unknown Object (Track ID: TRK-0891)',
+          class_id: 3,
+          confidence: Math.max(confidence, 0.78),
+          box_xyxy: [1250, 450, 1450, 680],
+          mask_area_px: null,
+          area_method: 'Spatial Bounding',
+          category: 'Unidentified Cargo',
+          box_area_px: 46000,
+          area_px_used: 46000,
+          estimated_weight_kg: null,
+          expected_weight_min_kg: null,
+          expected_weight_max_kg: null,
+          weight_method: 'Boundary Distance: 4.8 meters',
+          box_fill_ratio_used: null,
+          thickness_cm_used: null,
+          density_kg_m3_used: null,
+          pixel_area_cm2_used: null,
+        },
+      ],
+    }
   })
+
+  return {
+    run_id: `BRS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+    created_at: new Date().toISOString(),
+    confidence_threshold: confidence,
+    duration_ms: 18,
+    total_detections: images.length * 3,
+    estimated_weight_kg: 0,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+    weight_aggregation: 'Spatial Risk Matrix',
+    pixel_area_cm2: 0.05,
+    source_run_id: null,
+    images,
+  }
 }
 
-export function getHistoryRuns(limit = 100): Promise<HistoryRun[]> {
-  return requestJson<HistoryRun[]>(`/api/history/runs?limit=${limit}`)
+// Demo Incidents List
+const DEMO_INCIDENTS: HistoryRun[] = [
+  {
+    run_id: 'BRS-2026-0047',
+    created_at: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
+    completed_at: new Date(Date.now() - 1000 * 60 * 18 + 18).toISOString(),
+    status: 'UNDER REVIEW',
+    image_count: 1,
+    total_detections: 4,
+    confidence_threshold: 0.25,
+    duration_ms: 18,
+    source_run_id: null,
+    pixel_area_cm2: 0.05,
+    preview_input_url: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
+    preview_output_url: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
+    preview_filename: 'CAM-04_RESTRICTED_SECTOR.jpg',
+    mean_confidence: 0.94,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+  },
+  {
+    run_id: 'BRS-2026-0042',
+    created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+    completed_at: new Date(Date.now() - 1000 * 60 * 120 + 22).toISOString(),
+    status: 'ACTION TAKEN',
+    image_count: 1,
+    total_detections: 6,
+    confidence_threshold: 0.25,
+    duration_ms: 22,
+    source_run_id: null,
+    pixel_area_cm2: 0.05,
+    preview_input_url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+    preview_output_url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+    preview_filename: 'CAM-03_PERIMETER_ZONE.jpg',
+    mean_confidence: 0.92,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+  },
+  {
+    run_id: 'BRS-2026-0038',
+    created_at: new Date(Date.now() - 1000 * 60 * 340).toISOString(),
+    completed_at: new Date(Date.now() - 1000 * 60 * 340 + 16).toISOString(),
+    status: 'LOGGED',
+    image_count: 1,
+    total_detections: 2,
+    confidence_threshold: 0.25,
+    duration_ms: 16,
+    source_run_id: null,
+    pixel_area_cm2: 0.05,
+    preview_input_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+    preview_output_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+    preview_filename: 'CAM-01_NORTH_SECTOR.jpg',
+    mean_confidence: 0.88,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+  },
+  {
+    run_id: 'BRS-2026-0031',
+    created_at: new Date(Date.now() - 1000 * 60 * 780).toISOString(),
+    completed_at: new Date(Date.now() - 1000 * 60 * 780 + 19).toISOString(),
+    status: 'UNDER REVIEW',
+    image_count: 1,
+    total_detections: 3,
+    confidence_threshold: 0.25,
+    duration_ms: 19,
+    source_run_id: null,
+    pixel_area_cm2: 0.05,
+    preview_input_url: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80',
+    preview_output_url: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80',
+    preview_filename: 'CAM-05_BORDER_CROSSING.jpg',
+    mean_confidence: 0.91,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+  },
+  {
+    run_id: 'BRS-2026-0024',
+    created_at: new Date(Date.now() - 1000 * 60 * 1200).toISOString(),
+    completed_at: new Date(Date.now() - 1000 * 60 * 1200 + 20).toISOString(),
+    status: 'LOGGED',
+    image_count: 1,
+    total_detections: 2,
+    confidence_threshold: 0.25,
+    duration_ms: 20,
+    source_run_id: null,
+    pixel_area_cm2: 0.05,
+    preview_input_url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80',
+    preview_output_url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80',
+    preview_filename: 'CAM-02_EAST_CHECKPOINT.jpg',
+    mean_confidence: 0.89,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+  },
+]
+
+export async function getHistoryRuns(_limit = 100): Promise<HistoryRun[]> {
+  return DEMO_INCIDENTS
 }
 
-export function getHistoryRun(runId: string): Promise<HistoryRunDetail> {
-  return requestJson<HistoryRunDetail>(`/api/history/runs/${runId}`)
+export async function getHistoryRun(runId: string): Promise<HistoryRunDetail> {
+  const match = DEMO_INCIDENTS.find((item) => item.run_id === runId) || DEMO_INCIDENTS[0]
+  return {
+    run_id: match.run_id,
+    created_at: match.created_at,
+    completed_at: match.completed_at,
+    status: match.status,
+    image_count: match.image_count,
+    total_detections: match.total_detections,
+    confidence_threshold: match.confidence_threshold,
+    duration_ms: match.duration_ms,
+    model_path: 'Sentinel-Spatial-v4.2',
+    device: 'cuda / tensor-core',
+    error_message: null,
+    source_run_id: null,
+    pixel_area_cm2: 0.05,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+    images: [
+      {
+        image_id: 101,
+        filename: match.preview_filename || 'CAM-04_RESTRICTED_SECTOR.jpg',
+        width: 1920,
+        height: 1080,
+        input_url: match.preview_input_url,
+        output_url: match.preview_output_url,
+        detection_count: match.total_detections,
+        mean_confidence: match.mean_confidence,
+        estimated_weight_kg: 0,
+        expected_weight_min_kg: 0,
+        expected_weight_max_kg: 0,
+        totals_by_material_kg: {},
+        quality: {
+          valid: true,
+          score: 95,
+          blur_score: 10,
+          contrast_score: 85,
+          brightness: 105,
+          width: 1920,
+          height: 1080,
+          issues: [],
+        },
+        detections: [
+          {
+            label: 'Restricted Zone Intrusion (TRK-0182)',
+            class_id: 1,
+            confidence: 0.94,
+            box_xyxy: [150, 220, 390, 710],
+            mask_area_px: null,
+            area_method: 'Spatial Vector',
+            category: 'High-Risk Incident',
+            box_area_px: 120000,
+            area_px_used: 120000,
+            estimated_weight_kg: null,
+            expected_weight_min_kg: null,
+            expected_weight_max_kg: null,
+            weight_method: 'Approach Velocity: 2.8 m/s',
+            box_fill_ratio_used: null,
+            thickness_cm_used: null,
+            density_kg_m3_used: null,
+            pixel_area_cm2_used: null,
+          },
+          {
+            label: 'Boundary Proximity Alert (TRK-0183)',
+            class_id: 2,
+            confidence: 0.91,
+            box_xyxy: [420, 280, 610, 680],
+            mask_area_px: null,
+            area_method: 'Spatial Vector',
+            category: 'Boundary Warning',
+            box_area_px: 76000,
+            area_px_used: 76000,
+            estimated_weight_kg: null,
+            expected_weight_min_kg: null,
+            expected_weight_max_kg: null,
+            weight_method: 'Fence Distance: 1.2 meters',
+            box_fill_ratio_used: null,
+            thickness_cm_used: null,
+            density_kg_m3_used: null,
+            pixel_area_cm2_used: null,
+          },
+        ],
+      },
+    ],
+  }
 }
 
-export function rerunHistory(
+export async function rerunHistory(
   runId: string,
   confidence: number,
-  maxDetections: number,
-  pixelAreaCm2: number,
+  _maxDetections: number,
+  _pixelAreaCm2: number,
 ): Promise<PredictionRun> {
-  const form = new FormData()
-  form.append('confidence', confidence.toString())
-  form.append('max_detections', maxDetections.toString())
-  form.append('pixel_area_cm2', pixelAreaCm2.toString())
-  return requestJson<PredictionRun>(`/api/history/runs/${runId}/rerun`, {
-    method: 'POST',
-    body: form,
-  })
+  const match = DEMO_INCIDENTS.find((item) => item.run_id === runId) || DEMO_INCIDENTS[0]
+  return {
+    run_id: `${match.run_id}-RERUN`,
+    created_at: new Date().toISOString(),
+    confidence_threshold: confidence,
+    duration_ms: 16,
+    total_detections: match.total_detections,
+    estimated_weight_kg: 0,
+    expected_weight_min_kg: 0,
+    expected_weight_max_kg: 0,
+    weight_aggregation: 'Spatial Vector Rerun',
+    pixel_area_cm2: 0.05,
+    source_run_id: match.run_id,
+    images: [
+      {
+        image_id: 201,
+        filename: match.preview_filename || 'CAM-04_RESTRICTED_SECTOR.jpg',
+        width: 1920,
+        height: 1080,
+        input_url: match.preview_input_url,
+        output_url: match.preview_output_url,
+        detection_count: match.total_detections,
+        mean_confidence: 0.93,
+        estimated_weight_kg: 0,
+        expected_weight_min_kg: 0,
+        expected_weight_max_kg: 0,
+        totals_by_material_kg: {},
+        quality: null,
+        detections: [
+          {
+            label: 'RERUN: Person (TRK-0182)',
+            class_id: 1,
+            confidence: Math.max(confidence, 0.95),
+            box_xyxy: [150, 220, 390, 710],
+            mask_area_px: null,
+            area_method: 'Spatial Vector',
+            category: 'Tracked Subject',
+            box_area_px: 120000,
+            area_px_used: 120000,
+            estimated_weight_kg: null,
+            expected_weight_min_kg: null,
+            expected_weight_max_kg: null,
+            weight_method: 'Recalculated Velocity Vector',
+            box_fill_ratio_used: null,
+            thickness_cm_used: null,
+            density_kg_m3_used: null,
+            pixel_area_cm2_used: null,
+          },
+        ],
+      },
+    ],
+  }
 }
