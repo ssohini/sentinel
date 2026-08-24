@@ -1,58 +1,52 @@
 .option-wheel {
+  --ow-text-color: #707775;
+  --ow-active-color: #ffffff;
+  --ow-font-size: 2.2rem;
+  --ow-inset: 50px;
+
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 340px;
   overflow: hidden;
+  cursor: grab;
   user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   touch-action: none;
-  cursor: grab;
+  outline: none;
 }
 
-.option-wheel:active {
+.option-wheel--dragging {
   cursor: grabbing;
 }
 
-.option-wheel__list {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  perspective: 1000px;
-  transform-style: preserve-3d;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
+/* Each option is absolutely centered, then offset along the curve by the
+   rAF loop through transform/opacity/filter, so everything stays in step. */
 .option-wheel__item {
   position: absolute;
   top: 50%;
-  left: 0;
-  width: 100%;
-  height: auto;
-  margin-top: -1.25rem;
+  left: var(--ow-inset);
+  white-space: nowrap;
+  font-size: var(--ow-font-size);
+  line-height: 1;
+  font-weight: 600;
   font-family: 'Helvetica Now Var', 'Barlow', -apple-system, sans-serif;
-  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  white-space: nowrap;
+  transform-origin: left center;
   cursor: pointer;
-  transform-origin: center center;
-  transition: color 0.2s ease, text-shadow 0.2s ease;
   will-change: transform, opacity, filter;
-  padding: 0.4rem 1rem;
-  user-select: none;
-  -webkit-user-select: none;
+  /* --ow-p goes 0 -> 1 as an option approaches the middle of the wheel */
+  color: color-mix(in srgb, var(--ow-active-color) calc(var(--ow-p, 0) * 100%), var(--ow-text-color));
+  transition: text-shadow 0.2s ease;
+}
+
+.option-wheel--right .option-wheel__item {
+  left: auto;
+  right: var(--ow-inset);
+  transform-origin: right center;
 }
 
 .option-wheel__item--selected {
-  font-weight: 900;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 12px rgba(0, 217, 165, 0.5);
+  font-weight: 800;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.7), 0 0 10px rgba(0, 217, 176, 0.4);
 }
