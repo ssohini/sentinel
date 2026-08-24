@@ -125,7 +125,7 @@ export function AccordionGallery({
 
   return (
     <div className="space-y-4 select-none">
-      <div className="flex items-center justify-between text-xs font-mono text-white/50 px-1">
+      <div className="flex items-center justify-between text-xs font-mono text-white/60 px-1 font-semibold">
         <span className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-[#00D9A5]" />
           <span>CONNECTED DEMO BORDER CCTV CHANNELS ({cameraItems.length})</span>
@@ -134,17 +134,17 @@ export function AccordionGallery({
       </div>
 
       {/* Horizontal Desktop Accordion (GPU Accelerated 150-250ms CSS flex-grow transition) */}
-      <div className="flex flex-col md:flex-row gap-3 w-full h-[480px] sm:h-[520px] rounded-3xl overflow-hidden bg-[#050706] p-3 border border-[rgba(255,255,255,0.10)]">
+      <div className="flex flex-col md:flex-row gap-3 w-full h-[480px] sm:h-[520px] rounded-3xl overflow-hidden bg-[#050706] p-3 border border-[rgba(255,255,255,0.12)]">
         {cameraItems.map((item) => {
           const isExpanded = item.id === expandedId
           const riskBadge =
             item.riskLevel === 'CRITICAL'
-              ? 'bg-red-950/80 border-red-500/50 text-red-300'
+              ? 'bg-red-950/90 border-red-500/60 text-red-300 font-bold'
               : item.riskLevel === 'HIGH'
-              ? 'bg-orange-950/80 border-orange-500/50 text-orange-300'
+              ? 'bg-orange-950/90 border-orange-500/60 text-orange-300 font-bold'
               : item.riskLevel === 'MODERATE'
-              ? 'bg-amber-950/80 border-amber-500/50 text-amber-300'
-              : 'bg-emerald-950/80 border-emerald-500/50 text-[#00D9A5]'
+              ? 'bg-amber-950/90 border-amber-500/60 text-amber-300 font-bold'
+              : 'bg-emerald-950/90 border-emerald-500/60 text-[#00D9A5] font-bold'
 
           return (
             <div
@@ -158,8 +158,8 @@ export function AccordionGallery({
               }}
               className={`relative flex-1 rounded-2xl overflow-hidden cursor-pointer border ${
                 isExpanded
-                  ? 'border-[#00D9A5] shadow-[0_0_30px_rgba(0,217,165,0.2)] opacity-100'
-                  : 'border-[rgba(255,255,255,0.08)] opacity-60 hover:opacity-90'
+                  ? 'border-[#00D9A5] shadow-[0_0_30px_rgba(0,217,165,0.3)] opacity-100'
+                  : 'border-[rgba(255,255,255,0.10)] opacity-60 hover:opacity-90'
               }`}
             >
               {/* Background Image Panel */}
@@ -184,7 +184,7 @@ export function AccordionGallery({
               <div className="absolute inset-0 p-5 flex flex-col justify-between z-10">
                 {/* Top Status Strip */}
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[rgba(255,255,255,0.15)] text-[10px] font-mono font-bold text-white tracking-widest flex items-center gap-1.5">
+                  <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[rgba(255,255,255,0.20)] text-[10px] font-mono font-bold text-white tracking-widest flex items-center gap-1.5">
                     <Eye className="w-3 h-3 text-[#00D9A5]" />
                     {item.name}
                   </span>
@@ -198,34 +198,34 @@ export function AccordionGallery({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#00D9A5] animate-ping" />
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#00D9A5] font-semibold">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#00D9A5] font-bold">
                       ● CCTV DEMO
                     </span>
                   </div>
 
-                  <h4 className="font-serif italic text-2xl sm:text-3xl text-white font-normal leading-tight">
+                  <h4 className="text-xl sm:text-2xl font-sans font-bold text-white uppercase tracking-wide leading-tight">
                     {item.zone}
                   </h4>
 
                   {isExpanded && (
-                    <div className="pt-2 border-t border-[rgba(255,255,255,0.15)] grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono text-white/80 animate-fadeIn">
+                    <div className="pt-2 border-t border-[rgba(255,255,255,0.18)] grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono text-white/90 animate-fadeIn font-medium">
                       <div>
-                        <span className="text-[10px] text-white/50 block">TRACKS</span>
+                        <span className="text-[10px] text-white/60 block font-semibold">TRACKS</span>
                         <span className="font-bold text-[#00D9A5] text-sm">{item.tracksCount} Subjects</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-white/50 block">ALERTS</span>
+                        <span className="text-[10px] text-white/60 block font-semibold">ALERTS</span>
                         <span className={`font-bold text-sm ${item.alertsCount > 0 ? 'text-amber-400' : 'text-white'}`}>
                           {item.alertsCount} Active
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-white/50 block">LAST EVENT</span>
+                        <span className="text-[10px] text-white/60 block font-semibold">LAST EVENT</span>
                         <span className="text-white text-xs">{item.lastEvent}</span>
                       </div>
                       <div className="hidden sm:block">
-                        <span className="text-[10px] text-white/50 block">SPATIAL STATUS</span>
-                        <span className="text-white/90 text-[11px] flex items-center gap-1">
+                        <span className="text-[10px] text-white/60 block font-semibold">SPATIAL STATUS</span>
+                        <span className="text-white text-[11px] flex items-center gap-1 font-bold">
                           <CheckCircle2 className="w-3 h-3 text-[#00D9A5]" /> Sentinel Active
                         </span>
                       </div>

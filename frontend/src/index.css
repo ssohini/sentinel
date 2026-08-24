@@ -4,8 +4,8 @@
   :root {
     --bg-main: #050605;
     --accent-cyan: #00D9A5;
-    --panel-bg: rgba(255, 255, 255, 0.025);
-    --panel-border: rgba(255, 255, 255, 0.10);
+    --panel-bg: rgba(255, 255, 255, 0.03);
+    --panel-border: rgba(255, 255, 255, 0.12);
   }
 
   body {
@@ -15,46 +15,43 @@
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4, .font-serif {
-    font-family: 'Instrument Serif', serif;
-  }
-
-  .font-sans {
-    font-family: 'Helvetica Now Var', 'Barlow', sans-serif;
+  h1, h2, h3, h4, h5, h6, .font-serif, .font-sans {
+    font-family: 'Helvetica Now Var', 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-style: normal !important;
   }
 }
 
 .liquid-glass {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.035);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.08),
-    0 15px 50px rgba(0, 0, 0, 0.25);
+    inset 0 1px 1px rgba(255, 255, 255, 0.10),
+    0 15px 50px rgba(0, 0, 0, 0.3);
 }
 
 .liquid-glass-strong {
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    inset 0 1px 2px rgba(255, 255, 255, 0.12),
-    0 20px 60px rgba(0, 0, 0, 0.4);
+    inset 0 1px 2px rgba(255, 255, 255, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .liquid-glass-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-glass-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
 }
 
@@ -67,21 +64,11 @@
   background: #050605;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 217, 165, 0.5);
-}
-
-/* Custom Keyframe Animations */
-@keyframes orbBreathe {
-  0%, 100% {
-    transform: scale(0.98) rotate(0deg);
-  }
-  50% {
-    transform: scale(1.02) rotate(3deg);
-  }
+  background: rgba(0, 217, 165, 0.6);
 }
 
 @keyframes spinEarth {
@@ -91,10 +78,6 @@
   100% {
     transform: rotate(360deg);
   }
-}
-
-.animate-orb-breathe {
-  animation: orbBreathe 12s ease-in-out infinite;
 }
 
 .animate-spin-earth {

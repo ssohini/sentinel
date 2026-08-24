@@ -40,13 +40,13 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
           transition={{ duration: 0.8 }}
           className="text-center space-y-1"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono tracking-[0.25em] text-[#00D9A5] uppercase">
+          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono tracking-[0.25em] text-[#00D9A5] uppercase font-semibold">
             SITUATIONAL AWARENESS
           </div>
-          <h2 className="font-serif italic text-3xl sm:text-5xl font-normal text-white tracking-tight">
+          <h2 className="text-3xl sm:text-5xl font-sans font-extrabold text-white tracking-wider uppercase">
             COMMAND CENTER
           </h2>
-          <p className="text-[11px] sm:text-xs text-white/70 font-mono tracking-widest uppercase">
+          <p className="text-[11px] sm:text-xs text-white/70 font-mono tracking-widest uppercase font-medium">
             SELECT A SURVEILLANCE MODE
           </p>
         </motion.div>
@@ -59,7 +59,7 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
             {/* Subtle Vertical Accent Guide Line behind Wheel */}
             <div className="absolute left-6 top-6 bottom-6 w-px bg-gradient-to-b from-transparent via-[#00D9A5]/40 to-transparent pointer-events-none z-0" />
 
-            <div className="flex items-center justify-between text-[10px] font-mono text-white/50 px-4 mb-2 z-10">
+            <div className="flex items-center justify-between text-[10px] font-mono text-white/60 px-4 mb-2 z-10 font-medium">
               <span className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#00D9A5] shadow-[0_0_8px_#00D9A5]" />
                 <span>SURVEILLANCE MODES</span>
@@ -68,7 +68,7 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
             </div>
 
             {/* React Bits OptionWheel Component Container with Controlled Explicit Height */}
-            <div className="relative w-full h-[360px] sm:h-[440px] lg:h-[480px] rounded-3xl bg-black/40 border border-white/10 p-2 overflow-hidden z-10 shadow-2xl">
+            <div className="relative w-full h-[360px] sm:h-[440px] lg:h-[480px] rounded-3xl bg-black/50 border border-white/15 p-2 overflow-hidden z-10 shadow-2xl">
               <OptionWheel
                 items={[
                   'MAJOR INCIDENT LOG',
@@ -76,7 +76,7 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
                   'LIVE FEED',
                 ]}
                 defaultSelected={2}
-                textColor="#707775"
+                textColor="#8a9491"
                 activeColor="#ffffff"
                 side="left"
                 fontSize={2.3}
@@ -102,44 +102,46 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
               className={`p-6 sm:p-8 rounded-3xl transition-all duration-300 ${
-                selectedMode === 2
-                  ? 'liquid-glass-strong border-[#00D9A5] shadow-[0_0_40px_rgba(0,217,165,0.25)] ring-1 ring-[#00D9A5]'
-                  : 'liquid-glass border-white/15'
+                selectedMode === 0
+                  ? 'liquid-glass-strong border-amber-500/70 bg-amber-950/30 shadow-[0_0_45px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/60'
+                  : selectedMode === 2
+                  ? 'liquid-glass-strong border-[#00D9A5] shadow-[0_0_45px_rgba(0,217,165,0.25)] ring-1 ring-[#00D9A5]'
+                  : 'liquid-glass border-white/20'
               }`}
             >
-              {/* MODE 0: MAJOR INCIDENT LOG */}
+              {/* MODE 0: MAJOR INCIDENT LOG (HIGHLY VISIBLE) */}
               {selectedMode === 0 && (
                 <div className="space-y-5">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-white/15 pb-3">
                     <span className="text-[11px] font-mono tracking-widest text-amber-400 font-bold uppercase">
                       OPTION 01 / HIGH PRIORITY
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-950/80 border border-amber-500/40 text-[11px] font-mono text-amber-300">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/90 border border-amber-500/60 text-xs font-mono text-amber-300 font-bold shadow-md">
+                      <AlertTriangle className="w-4 h-4 text-amber-400" />
                       ALERTS ACTIVE
                     </span>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <h3 className="font-serif italic text-2xl sm:text-3xl text-white font-normal">
+                  <div className="space-y-2">
+                    <h3 className="text-3xl sm:text-4xl font-sans font-black text-amber-300 tracking-wide uppercase drop-shadow-[0_0_20px_rgba(245,158,11,0.4)]">
                       MAJOR INCIDENT LOG
                     </h3>
-                    <p className="text-xs sm:text-sm text-white/75 font-sans font-light leading-relaxed">
-                      Review high-priority border events, alerts, detected movement and recorded surveillance evidence across all sectors.
+                    <p className="text-xs sm:text-sm text-white/90 font-sans font-normal leading-relaxed">
+                      Review high-priority border events, alerts, detected movement patterns, and recorded surveillance evidence across all sectors.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 text-xs font-mono pt-1">
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">ACTIVE INCIDENTS</span>
-                      <span className="text-white font-bold text-base mt-1 block">03 Events</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-amber-500/30 bg-amber-950/20">
+                      <span className="text-white/60 block text-[10px] font-semibold">ACTIVE INCIDENTS</span>
+                      <span className="text-white font-bold text-lg mt-1 block">03 Events</span>
                     </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">UNRESOLVED</span>
-                      <span className="text-amber-400 font-bold text-base mt-1 block">01 Pending</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-amber-500/40 bg-amber-950/30">
+                      <span className="text-amber-300/80 block text-[10px] font-semibold">UNRESOLVED</span>
+                      <span className="text-amber-400 font-black text-lg mt-1 block">01 Pending</span>
                     </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">LAST EVENT</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-amber-500/30 bg-amber-950/20">
+                      <span className="text-white/60 block text-[10px] font-semibold">LAST EVENT</span>
                       <span className="text-white font-bold text-xs mt-1 block">23:41:18</span>
                     </div>
                   </div>
@@ -147,7 +149,7 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
                   <button
                     type="button"
                     onClick={handleExecuteAction}
-                    className="w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-semibold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+                    className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_25px_rgba(245,158,11,0.4)]"
                   >
                     <span>OPEN INCIDENT LOG</span>
                     <ArrowRight className="w-4 h-4" />
@@ -158,36 +160,36 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
               {/* MODE 1: DAILY SURVEILLANCE REPORT */}
               {selectedMode === 1 && (
                 <div className="space-y-5">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-white/15 pb-3">
                     <span className="text-[11px] font-mono tracking-widest text-[#00D9A5] font-bold uppercase">
                       OPTION 02 / DAILY INTELLIGENCE
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/[0.05] border border-white/15 text-[11px] font-mono text-white/80">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/20 text-xs font-mono text-white/90 font-medium">
                       <FileText className="w-3.5 h-3.5 text-[#00D9A5]" />
                       REPORT READY
                     </span>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <h3 className="font-serif italic text-2xl sm:text-3xl text-white font-normal">
+                  <div className="space-y-2">
+                    <h3 className="text-3xl sm:text-4xl font-sans font-extrabold text-white tracking-wide uppercase">
                       DAILY SURVEILLANCE REPORT
                     </h3>
-                    <p className="text-xs sm:text-sm text-white/75 font-sans font-light leading-relaxed">
+                    <p className="text-xs sm:text-sm text-white/80 font-sans font-normal leading-relaxed">
                       Review detected activity, movement patterns, alerts and recurring border events recorded throughout the day.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 text-xs font-mono pt-1">
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">CAMERAS MONITORED</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">CAMERAS MONITORED</span>
                       <span className="text-white font-bold text-base mt-1 block">06 Sectors</span>
                     </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">EVENTS DETECTED</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">EVENTS DETECTED</span>
                       <span className="text-[#00D9A5] font-bold text-base mt-1 block">18 Total</span>
                     </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">RISK LEVEL</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">RISK LEVEL</span>
                       <span className="text-white font-bold text-xs mt-1 block">MODERATE</span>
                     </div>
                   </div>
@@ -195,7 +197,7 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
                   <button
                     type="button"
                     onClick={handleExecuteAction}
-                    className="w-full py-3.5 rounded-2xl bg-[#00D9A5] hover:bg-emerald-400 text-black font-semibold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+                    className="w-full py-4 rounded-2xl bg-[#00D9A5] hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
                   >
                     <span>VIEW DAILY REPORT</span>
                     <ArrowRight className="w-4 h-4" />
@@ -206,36 +208,36 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
               {/* MODE 2: LIVE FEED (PRIMARY EMPHASIZED OPTION) */}
               {selectedMode === 2 && (
                 <div className="space-y-5">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-white/15 pb-3">
                     <span className="text-[11px] font-mono tracking-widest text-[#00D9A5] font-bold uppercase">
                       OPTION 03 / PRIMARY MONITOR
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/80 border border-[#00D9A5]/50 text-[11px] font-mono text-[#00D9A5]">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/90 border border-[#00D9A5]/60 text-xs font-mono text-[#00D9A5] font-bold shadow-md">
                       <Camera className="w-3.5 h-3.5 text-[#00D9A5]" />
                       ● LIVE CCTV DEMO
                     </span>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <h3 className="font-serif italic text-3xl sm:text-4xl text-[#00D9A5] font-normal drop-shadow-[0_0_20px_rgba(0,217,165,0.4)]">
+                  <div className="space-y-2">
+                    <h3 className="text-3xl sm:text-5xl font-sans font-black text-[#00D9A5] tracking-wide uppercase drop-shadow-[0_0_25px_rgba(0,217,165,0.5)]">
                       LIVE FEED
                     </h3>
-                    <p className="text-xs sm:text-sm text-white/80 font-sans font-light leading-relaxed">
+                    <p className="text-xs sm:text-sm text-white/90 font-sans font-normal leading-relaxed">
                       Monitor simulated border CCTV footage and spatial video intelligence across active surveillance sectors.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 text-xs font-mono pt-1">
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">CCTV CHANNELS</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">CCTV CHANNELS</span>
                       <span className="text-white font-bold text-base mt-1 block">06 Feeds</span>
                     </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">ACTIVE TRACKS</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">ACTIVE TRACKS</span>
                       <span className="text-[#00D9A5] font-bold text-base mt-1 block">03 Subjects</span>
                     </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/10">
-                      <span className="text-white/40 block text-[10px]">SPATIAL ALERTS</span>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">SPATIAL ALERTS</span>
                       <span className="text-amber-400 font-bold text-xs mt-1 block flex items-center gap-1">
                         <ShieldAlert className="w-3.5 h-3.5 text-amber-400" /> 01 Alert
                       </span>
@@ -245,7 +247,7 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
                   <button
                     type="button"
                     onClick={handleExecuteAction}
-                    className="w-full py-3.5 rounded-2xl bg-[#00D9A5] hover:bg-emerald-400 text-black font-semibold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_30px_rgba(0,217,165,0.35)]"
+                    className="w-full py-4 rounded-2xl bg-[#00D9A5] hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_30px_rgba(0,217,165,0.4)]"
                   >
                     <span>ENTER LIVE MONITOR</span>
                     <ArrowRight className="w-4 h-4" />
