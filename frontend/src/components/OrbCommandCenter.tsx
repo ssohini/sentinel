@@ -8,19 +8,19 @@ interface OrbCommandCenterProps {
 }
 
 export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
-  // Option 0: MAJOR INCIDENT LOG, Option 1: DAILY SURVEILLANCE REPORT, Option 2: LIVE FEED (Default selected)
-  const [selectedMode, setSelectedMode] = useState<number>(2)
+  // Option 0: LIVE FEED (Primary top option), Option 1: MAJOR INCIDENT LOG, Option 2: DAILY SURVEILLANCE REPORT
+  const [selectedMode, setSelectedMode] = useState<number>(0)
 
   const handleModeChange = (index: number) => {
     setSelectedMode(index)
   }
 
   const handleExecuteAction = () => {
-    if (selectedMode === 2) {
+    if (selectedMode === 0) {
       onSelectOption('inspect') // Page 3 Live Feed
-    } else if (selectedMode === 0) {
-      onSelectOption('history') // Incident Log
     } else if (selectedMode === 1) {
+      onSelectOption('history') // Incident Log
+    } else if (selectedMode === 2) {
       onSelectOption('system') // Daily Report
     }
   }
@@ -54,7 +54,7 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
         {/* Main Content Split Grid: React Bits OptionWheel (Left 45%) vs Selected Mode Info Panel (Right 55%) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
 
-          {/* Left Column: React Bits OptionWheel Container (Explicit Height Required) */}
+          {/* Left Column: React Bits OptionWheel Container (Reduced Font Size & Fully Visible Options) */}
           <div className="lg:col-span-5 relative flex flex-col justify-center">
             {/* Subtle Vertical Accent Guide Line behind Wheel */}
             <div className="absolute left-6 top-6 bottom-6 w-px bg-gradient-to-b from-transparent via-[#00D9A5]/40 to-transparent pointer-events-none z-0" />
@@ -67,26 +67,26 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
               <span>● SYSTEM READY</span>
             </div>
 
-            {/* React Bits OptionWheel Component Container with Controlled Explicit Height */}
-            <div className="relative w-full h-[360px] sm:h-[440px] lg:h-[480px] rounded-3xl bg-black/50 border border-white/15 p-2 overflow-hidden z-10 shadow-2xl">
+            {/* React Bits OptionWheel Component Container */}
+            <div className="relative w-full h-[340px] sm:h-[420px] lg:h-[460px] rounded-3xl bg-black/50 border border-white/15 p-2 overflow-hidden z-10 shadow-2xl">
               <OptionWheel
                 items={[
+                  'LIVE FEED',
                   'MAJOR INCIDENT LOG',
                   'DAILY SURVEILLANCE REPORT',
-                  'LIVE FEED',
                 ]}
-                defaultSelected={2}
+                defaultSelected={0}
                 textColor="#8a9491"
                 activeColor="#ffffff"
                 side="left"
-                fontSize={2.3}
-                spacing={1.4}
+                fontSize={1.5}
+                spacing={1.6}
                 curve={1.2}
-                tilt={7}
-                blur={1.5}
-                fade={0.22}
+                tilt={6}
+                blur={1.2}
+                fade={0.25}
                 smoothing={140}
-                inset={70}
+                inset={50}
                 loop={false}
                 draggable
                 onChange={handleModeChange}
@@ -103,18 +103,68 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
               transition={{ duration: 0.3 }}
               className={`p-6 sm:p-8 rounded-3xl transition-all duration-300 ${
                 selectedMode === 0
-                  ? 'liquid-glass-strong border-amber-500/70 bg-amber-950/30 shadow-[0_0_45px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/60'
-                  : selectedMode === 2
                   ? 'liquid-glass-strong border-[#00D9A5] shadow-[0_0_45px_rgba(0,217,165,0.25)] ring-1 ring-[#00D9A5]'
+                  : selectedMode === 1
+                  ? 'liquid-glass-strong border-amber-500/70 bg-amber-950/30 shadow-[0_0_45px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/60'
                   : 'liquid-glass border-white/20'
               }`}
             >
-              {/* MODE 0: MAJOR INCIDENT LOG (HIGHLY VISIBLE) */}
+              {/* MODE 0: LIVE FEED (PRIMARY TOP EMPHASIZED OPTION) */}
               {selectedMode === 0 && (
                 <div className="space-y-5">
                   <div className="flex items-center justify-between border-b border-white/15 pb-3">
+                    <span className="text-[11px] font-mono tracking-widest text-[#00D9A5] font-bold uppercase">
+                      OPTION 01 / PRIMARY MONITOR
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/90 border border-[#00D9A5]/60 text-xs font-mono text-[#00D9A5] font-bold shadow-md">
+                      <Camera className="w-3.5 h-3.5 text-[#00D9A5]" />
+                      ● LIVE CCTV DEMO
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-3xl sm:text-5xl font-sans font-black text-[#00D9A5] tracking-wide uppercase drop-shadow-[0_0_25px_rgba(0,217,165,0.5)]">
+                      LIVE FEED
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/90 font-sans font-normal leading-relaxed">
+                      Monitor simulated border CCTV footage and spatial video intelligence across active surveillance sectors.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 text-xs font-mono pt-1">
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">CCTV CHANNELS</span>
+                      <span className="text-white font-bold text-base mt-1 block">06 Feeds</span>
+                    </div>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">ACTIVE TRACKS</span>
+                      <span className="text-[#00D9A5] font-bold text-base mt-1 block">03 Subjects</span>
+                    </div>
+                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
+                      <span className="text-white/50 block text-[10px] font-medium">SPATIAL ALERTS</span>
+                      <span className="text-amber-400 font-bold text-xs mt-1 block flex items-center gap-1">
+                        <ShieldAlert className="w-3.5 h-3.5 text-amber-400" /> 01 Alert
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleExecuteAction}
+                    className="w-full py-4 rounded-2xl bg-[#00D9A5] hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_30px_rgba(0,217,165,0.4)]"
+                  >
+                    <span>ENTER LIVE MONITOR</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* MODE 1: MAJOR INCIDENT LOG */}
+              {selectedMode === 1 && (
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between border-b border-white/15 pb-3">
                     <span className="text-[11px] font-mono tracking-widest text-amber-400 font-bold uppercase">
-                      OPTION 01 / HIGH PRIORITY
+                      OPTION 02 / HIGH PRIORITY
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/90 border border-amber-500/60 text-xs font-mono text-amber-300 font-bold shadow-md">
                       <AlertTriangle className="w-4 h-4 text-amber-400" />
@@ -157,12 +207,12 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
                 </div>
               )}
 
-              {/* MODE 1: DAILY SURVEILLANCE REPORT */}
-              {selectedMode === 1 && (
+              {/* MODE 2: DAILY SURVEILLANCE REPORT */}
+              {selectedMode === 2 && (
                 <div className="space-y-5">
                   <div className="flex items-center justify-between border-b border-white/15 pb-3">
                     <span className="text-[11px] font-mono tracking-widest text-[#00D9A5] font-bold uppercase">
-                      OPTION 02 / DAILY INTELLIGENCE
+                      OPTION 03 / DAILY INTELLIGENCE
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/20 text-xs font-mono text-white/90 font-medium">
                       <FileText className="w-3.5 h-3.5 text-[#00D9A5]" />
@@ -200,56 +250,6 @@ export function OrbCommandCenter({ onSelectOption }: OrbCommandCenterProps) {
                     className="w-full py-4 rounded-2xl bg-[#00D9A5] hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
                   >
                     <span>VIEW DAILY REPORT</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* MODE 2: LIVE FEED (PRIMARY EMPHASIZED OPTION) */}
-              {selectedMode === 2 && (
-                <div className="space-y-5">
-                  <div className="flex items-center justify-between border-b border-white/15 pb-3">
-                    <span className="text-[11px] font-mono tracking-widest text-[#00D9A5] font-bold uppercase">
-                      OPTION 03 / PRIMARY MONITOR
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/90 border border-[#00D9A5]/60 text-xs font-mono text-[#00D9A5] font-bold shadow-md">
-                      <Camera className="w-3.5 h-3.5 text-[#00D9A5]" />
-                      ● LIVE CCTV DEMO
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-3xl sm:text-5xl font-sans font-black text-[#00D9A5] tracking-wide uppercase drop-shadow-[0_0_25px_rgba(0,217,165,0.5)]">
-                      LIVE FEED
-                    </h3>
-                    <p className="text-xs sm:text-sm text-white/90 font-sans font-normal leading-relaxed">
-                      Monitor simulated border CCTV footage and spatial video intelligence across active surveillance sectors.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 text-xs font-mono pt-1">
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
-                      <span className="text-white/50 block text-[10px] font-medium">CCTV CHANNELS</span>
-                      <span className="text-white font-bold text-base mt-1 block">06 Feeds</span>
-                    </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
-                      <span className="text-white/50 block text-[10px] font-medium">ACTIVE TRACKS</span>
-                      <span className="text-[#00D9A5] font-bold text-base mt-1 block">03 Subjects</span>
-                    </div>
-                    <div className="liquid-glass p-3 rounded-2xl border border-white/15">
-                      <span className="text-white/50 block text-[10px] font-medium">SPATIAL ALERTS</span>
-                      <span className="text-amber-400 font-bold text-xs mt-1 block flex items-center gap-1">
-                        <ShieldAlert className="w-3.5 h-3.5 text-amber-400" /> 01 Alert
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleExecuteAction}
-                    className="w-full py-4 rounded-2xl bg-[#00D9A5] hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_30px_rgba(0,217,165,0.4)]"
-                  >
-                    <span>ENTER LIVE MONITOR</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

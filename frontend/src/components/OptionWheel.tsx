@@ -21,19 +21,19 @@ export interface OptionWheelProps {
 }
 
 export default function OptionWheel({
-  items = ['MAJOR INCIDENT LOG', 'DAILY SURVEILLANCE REPORT', 'LIVE FEED'],
-  defaultSelected = 2,
-  textColor = '#707775',
+  items = ['LIVE FEED', 'MAJOR INCIDENT LOG', 'DAILY SURVEILLANCE REPORT'],
+  defaultSelected = 0,
+  textColor = '#8a9491',
   activeColor = '#ffffff',
   side = 'left',
-  fontSize = 2.4,
-  spacing = 1.5,
+  fontSize = 1.5,
+  spacing = 1.6,
   curve = 1.2,
-  tilt = 7,
-  blur = 1.5,
-  fade = 0.22,
+  tilt = 6,
+  blur = 1.2,
+  fade = 0.25,
   smoothing = 140,
-  inset = 70,
+  inset = 50,
   loop = false,
   draggable = true,
   onChange,
@@ -93,11 +93,11 @@ export default function OptionWheel({
           const absOffset = Math.abs(offset)
           const isSelected = Math.round(currentScroll.current) === idx
 
-          const yPos = offset * fontSize * 18 * spacing
+          const yPos = offset * fontSize * 24 * spacing
           const xPos = Math.pow(absOffset, curve) * (side === 'left' ? inset * 0.4 : -inset * 0.4)
           const rotY = offset * tilt * (side === 'left' ? 1 : -1)
-          const scale = Math.max(0.65, 1 - absOffset * 0.12)
-          const opacityVal = Math.max(0, 1 - absOffset * fade)
+          const scale = Math.max(0.72, 1 - absOffset * 0.12)
+          const opacityVal = Math.max(0.15, 1 - absOffset * fade)
           const blurVal = absOffset * blur
 
           node.style.transform = `translate3d(${xPos}px, ${yPos}px, 0px) rotateY(${rotY}deg) scale(${scale})`
@@ -175,7 +175,7 @@ export default function OptionWheel({
     e.stopPropagation()
 
     const diffY = startY.current - e.clientY
-    const deltaScroll = diffY / (fontSize * 20 * spacing)
+    const deltaScroll = diffY / (fontSize * 24 * spacing)
     let next = startScroll.current + deltaScroll
     if (!loop) {
       next = Math.max(0, Math.min(items.length - 1, next))
